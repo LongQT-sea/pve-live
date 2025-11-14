@@ -1,22 +1,31 @@
-name: Build and Release ISO
+name: Build ISO
 on:
   workflow_dispatch:
     inputs:
       release_tag:
-        required: true
+        description: 'Optional: tag the build (e.g., v0.0.1) to attempt uploading it to Releases'
+        required: false
         type: string
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # needed to create releases
     container:
       image: debian:13
-      options: --privileged -v /home/runner/work:/home/runner/work
-    steps:
+      options: --privileged
+    steps:      
       - name: Install dependencies
         run: |
           apt-get update
           apt-get install -y git live-build
-
+          
+      - uses: actions/checkout@v5
+      
+      - name: Configure git safe directory
+        run: |
+          git config --global --add safe.directory '*'
+      
       - name: Install github cli
         run: |
           mkdir -p -m 755 /etc/apt/keyrings
@@ -30,31 +39,28 @@ jobs:
             tee /etc/apt/sources.list.d/github-cli.list > /dev/null
           apt update
           apt install -y gh
-
-      - uses: actions/checkout@v5
+          
       - name: Build ISO
         run: |
-          cd ${{ github.workspace }}
           lb config && lb build
           mv live-image-amd64.hybrid.iso pve-9_live_lxde.iso
-
+          
       - name: Upload artifacts
         uses: actions/upload-artifact@v5
         with:
           name: pve-9_live_lxde.iso
-          path: ${{ github.workspace }}/pve-9_live_lxde.iso
-
+          path: pve-9_live_lxde.iso
+          
       - name: Create Release
+        if: github.event.inputs.release_tag != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          chown -R $(id -u):$(id -g) ${{ github.workspace }}
           date_str="$(date -u +%Y-%m-%d)"
           title="Build: ${date_str}"
           notes="Proxmox VE 9 Live ISO with minimal LXDE desktop"
           tag=${{ github.event.inputs.release_tag }}
-
           gh release create $tag \
             --title "$title" \
             --notes "$notes" \
-            ${{ github.workspace }}/pve-9_live_lxde.iso
+            pve-9_live_lxde.iso
