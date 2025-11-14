@@ -14,31 +14,31 @@
 - Or build your own: [How to build](#how-to-build)
 
 > [!Important]
-> **Password:** `live` (for both `user` and `root` accounts)
+> **Password:** `live` (for both `user` and `root` accounts)[^pass]
 
 ---
 
 ## Network Configuration
-By default, `vmbr0` bridge obtains IP from DHCP.
+By default, the `vmbr0` bridge obtains its IP from DHCP via ethernet.
 
-If no ethernet cable is plugged in, you can use WiFi instead.
-
-To connect to WiFi, use `wpa_supplicant` and `ifupdown2`. Example:
+### WiFi Setup
+If no ethernet cable is connected, you can use WiFi instead. To connect to WiFi, use `wpa_supplicant` and `ifupdown2`:
 ```
 # Connect to WiFi
 wpa_passphrase "SSID_NAME" "your_wifi_password" > /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
 systemctl enable --now wpa_supplicant@wlan0
 
-# Obtain DHCP IP
-ifreload -a
+# Bring up wlan0 interface and obtain IP via DHCP
+ifup wlan0
 ```
 
-Remember to use the `vmbr1` bridge for VMs when your internet source is WiFi.
+To automatically connect to WiFi at boot, uncomment the `auto wlan0` line in `/etc/network/interfaces`
+
+> [!Important]
+> Use the `vmbr1` bridge for VMs when your internet source is WiFi.
 
 > [!Tip]
-> For faster boot time:
-> 1. Configure a static IP for `vmbr0`
-> 2. Remove `auto wlan0` (if not using WiFi) in `/etc/network/interfaces`
+> **Faster Boot Time:** If you're using ethernet only, remove the `auto wlan0` line from `/etc/network/interfaces` and configure a static IP for `vmbr0` to speed up boot time.
 
 ---
 
@@ -51,9 +51,9 @@ Remember to use the `vmbr1` bridge for VMs when your internet source is WiFi.
 For detailed platform-specific instructions, see [persistence-setup.md](./persistence-setup.md)
 
 > [!Tip]
-> **Dual Boot with Windows:** You can install Proxmox VE Live on your internal hard drive alongside Windows. Use Windows Disk Management to shrink your drive, then create 2 new partitions:
-> 1. **FAT32 partition (2GB)** - Label it `PVE-LIVE` and copy all ISO contents to it
-> 2. **Unformatted partition (rest of space)** - Boot into Proxmox VE Live and format as ext4 with label `persistence` (see Linux Step 4-5 in [persistence-setup.md](./persistence-setup.md))
+> **Dual Boot with Windows (UEFI):** You can install Proxmox VE Live on your internal hard drive alongside Windows. Use Windows Disk Management to shrink your drive, then create 2 new partitions:
+> 1. **FAT32 partition (3GB)** - Label it `PVE-LIVE` and copy all ISO contents to it
+> 2. **Unformatted partition** - Boot into Proxmox VE Live and format as ext4 with label `persistence` (see Linux Step 4-5 in [persistence-setup.md](./persistence-setup.md#linux))
 
 ---
 
@@ -67,10 +67,10 @@ For detailed platform-specific instructions, see [persistence-setup.md](./persis
    - Hook scripts: `config/hooks/normal/`
    - Add files to the root filesystem: `config/includes.chroot/`
 3. Navigate to the **Actions** tab and enable workflows.
-4. Select the **“Build and Release ISO”** workflow from the left sidebar.  
+4. Select the **“Build ISO”** workflow from the left sidebar.  
 5. Click the **“Run workflow”**, add a tag then click **“Run workflow”**.  
 6. Wait for the build to finish and the generated ISO will appear under:
-   - **Repo -> Actions -> Build and Release ISO -> Artifacts**.
+   - **Repo -> Actions -> Build ISO -> Artifacts**.
    - **Repo -> Release page**.
 
 ---
@@ -113,3 +113,4 @@ For detailed platform-specific instructions, see [persistence-setup.md](./persis
 This project redistributes **Proxmox VE** (Copyright © 2008–2026 Proxmox Server Solutions GmbH) under the **AGPL-3.0** license.
 
 [^services]: In `config/hooks/normal/9999-final-touch.hook.chroot`, these services are disabled: `pve-ha-crm pve-ha-lrm corosync pve-sdn-commit pve-firewall-commit`, and these are masked: `pve-firewall spiceproxy`.
+[^pass]: Can be configured in `config/hooks/normal/9999-final-touch.hook.chroot`

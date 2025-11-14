@@ -6,7 +6,7 @@ These instructions focus on creating the ext4 persistence partition on a USB dri
   - [macOS](#macos)
 
 > [!Note]
-> You can modify GRUB config file at `PVE-LIVE/boot/grub/grub.cfg` after creating the live boot USB drive.
+> You can modify the GRUB config file at `PVE-LIVE/boot/grub/grub.cfg` after creating the live boot USB drive.
 
 ### Windows
 - **Lazy method (slow):** Use [Rufus](https://github.com/pbatard/rufus/releases). After selecting the ISO file, adjust the **persistent partition size** slider.
@@ -19,7 +19,7 @@ These instructions focus on creating the ext4 persistence partition on a USB dri
     sel disk X
     clean
     con mbr
-    cre par pri size=2000
+    cre par pri size=3000
     format fs=fat32 quick label=pve-live
     active
     assign letter=V
@@ -30,6 +30,9 @@ These instructions focus on creating the ext4 persistence partition on a USB dri
 > After running these commands, it will create **2 partitions**:
 > - Partition 1: Mounted as `V:\`. Copy all files and folders from the live ISO to this partition.
 > - Partition 2: Will be formatted in Linux for persistence storage (see **Step 4: Format `/dev/sdX2`** in [Linux](#linux) section).
+
+> [!Tip]
+> Manual `diskpart` method supports booting on both Legacy BIOS and UEFI.
 
 ---
 
@@ -49,7 +52,7 @@ These instructions focus on creating the ext4 persistence partition on a USB dri
    p          # primary
    <enter>    # partition 1
    <enter>    # default start
-   +2000M     # 2GB size
+   +3000M     # 3GB size
    t          # change type
    c          # W95 FAT32 (LBA)
    a          # make bootable
@@ -97,7 +100,7 @@ These instructions focus on creating the ext4 persistence partition on a USB dri
 1. Create partitions with `diskutil`:
    ```
    diskutil list
-   diskutil partitionDisk diskX 2 MBR FAT32 "PVE-LIVE" 2g ExFAT "persistence" 0
+   diskutil partitionDisk diskX 2 MBR FAT32 "PVE-LIVE" 3g ExFAT "persistence" 0
    diskutil unmountDisk /dev/diskX
    sudo fdisk -e /dev/diskX <<< $'flag 1\nwrite\nexit\n'
    diskutil mount diskXs1

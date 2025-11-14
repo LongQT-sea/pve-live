@@ -5,17 +5,25 @@ iface eth0 inet manual
 
 iface eth1 inet manual
 
-auto wlan0
+
+# Uncomment the line below to bring up wlan0 at boot and auto obtain IP via DHCP
+#auto wlan0
 iface wlan0 inet dhcp
 iface wlan0 inet6 dhcp
         up    sysctl -w net.ipv6.conf.wlan0.accept_ra=2
 
+
+# For faster boot: change 'dhcp' to 'static', uncomment address/gateway lines, and set your static IP
 auto vmbr0
 iface vmbr0 inet dhcp
+#        address 192.168.0.250/24
+#        gateway 192.168.0.1
         bridge-ports eth0 eth1
         bridge-stp off
         bridge-fd 0
 
+
+# NAT interface for use with WiFi
 auto vmbr1
 iface vmbr1 inet static
         address 172.16.99.1/24
@@ -30,7 +38,6 @@ iface vmbr1 inet static
         # Prevent DNS leaks
         up    iptables -t nat -A PREROUTING -i vmbr1 -p udp --dport 53 -j REDIRECT --to-ports 53
         up    iptables -t nat -A PREROUTING -i vmbr1 -p tcp --dport 53 -j REDIRECT --to-ports 53
-#NAT interface for use with WiFi
 
 iface vmbr1 inet6 static
         address dead:beef::1/64

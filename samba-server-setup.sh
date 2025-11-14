@@ -1,7 +1,7 @@
 #!/bin/bash
 # Samba Server Setup Script
 
-# Configuration Variables
+# Configuration Variables (modify these before running)
 SMB_USER="longqt"
 SMB_USER_PASSWD="strongPassword"
 SMB_GROUP="smbs"
@@ -37,7 +37,7 @@ $SMB_USER_PASSWD
 $SMB_USER_PASSWD
 EOD
 
-# Change ownership of the '$$MOUNT_POINT' to allow the smbs group access
+# Change ownership of the '$MOUNT_POINT' to allow the smbs group access
 chown -R $SMB_USER:$SMB_GROUP $MOUNT_POINT
 
 # Set permissions: directories 2775 (setgid for group inheritance), files 664 (rw-rw-r--)
@@ -91,7 +91,7 @@ veto files = /._*/.DS_Store/
 delete veto files = yes
 
 [HDD-POOL]
-comment = WIN-SHARED
+comment = HDD-POOL
 path = $MOUNT_POINT
 valid users = @${SMB_GROUP}
 force group = ${SMB_GROUP}
