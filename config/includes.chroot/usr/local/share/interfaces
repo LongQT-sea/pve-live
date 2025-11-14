@@ -5,12 +5,42 @@ iface eth0 inet manual
 
 iface eth1 inet manual
 
-iface eth2 inet manual
+auto wlan0
+iface wlan0 inet dhcp
+iface wlan0 inet6 dhcp
+        up    sysctl -w net.ipv6.conf.wlan0.accept_ra=2
 
 auto vmbr0
 iface vmbr0 inet dhcp
-        bridge-ports eth0 eth1 eth2
+        bridge-ports eth0 eth1
         bridge-stp off
         bridge-fd 0
+
+auto vmbr1
+iface vmbr1 inet static
+        address 172.16.99.1/24
+        bridge-ports none
+        bridge-stp off
+        bridge-fd 0
+
+        # Enable IPv4 forward and NAT
+        up    sysctl -w net.ipv4.ip_forward=1
+        up    iptables -t nat -A POSTROUTING -s 172.16.99.0/24 ! -d 172.16.99.0/24 -j MASQUERADE
+        
+        # Prevent DNS leaks
+        up    iptables -t nat -A PREROUTING -i vmbr1 -p udp --dport 53 -j REDIRECT --to-ports 53
+        up    iptables -t nat -A PREROUTING -i vmbr1 -p tcp --dport 53 -j REDIRECT --to-ports 53
+#NAT interface for use with WiFi
+
+iface vmbr1 inet6 static
+        address dead:beef::1/64
+
+        # Enable IPv6 forward and NAT6
+        up    sysctl -w net.ipv6.conf.all.forwarding=1
+        up    ip6tables -t nat -A POSTROUTING -s dead:beef::/64 ! -d dead:beef::/64 -j MASQUERADE
+        
+        # Prevent DNS leaks
+        up    ip6tables -t nat -A PREROUTING -i vmbr1 -p udp --dport 53 -j REDIRECT --to-ports 53
+        up    ip6tables -t nat -A PREROUTING -i vmbr1 -p tcp --dport 53 -j REDIRECT --to-ports 53
 
 source /etc/network/interfaces.d/*
