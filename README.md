@@ -1,16 +1,16 @@
 # Proxmox VE 9 Live Boot ISO Image
 
-* Full Proxmox VE 9 functionality.[^services]
-* Build a fully customizable Proxmox VE 9 live boot image.
+* Build a fully customizable Proxmox VE 9 live boot ISO image.[^services]
 * Supports persistence filesystems across reboots (if configured).
 * Use it to test Proxmox VE without installing it.
 * Or create a portable USB to run a live Proxmox VE system.
+* Dual boot with Windows in a single SSD.
 * Lightweight LXDE desktop environment preconfigured.
 
 ---
 
-## Download
-- Get the latest PVE-9 Live ISO here: [Release page](https://github.com/LongQT-sea/pve-live/releases)
+## Usage
+- Get the prebuild PVE-Live ISO here: [Release page](https://github.com/LongQT-sea/pve-live/releases)
 - Or build your own: [How to build](#how-to-build)
 
 > [!Important]
@@ -23,22 +23,25 @@ By default, the `vmbr0` bridge obtains its IP from DHCP via ethernet.
 
 ### WiFi Setup
 If no ethernet cable is connected, you can use WiFi instead. To connect to WiFi, use `wpa_supplicant` and `ifupdown2`:
+> Replace `SSID_NAME` with your Wifi SSID name, `WIFI_PASSWD` with your WiFi password.
 ```
-# Connect to WiFi
-wpa_passphrase "SSID_NAME" "your_wifi_password" > /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+# Configure WiFi
+wpa_passphrase "SSID_NAME" "WIFI_PASSWD" > /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+
+# Establish the Wi-Fi connection
 systemctl enable --now wpa_supplicant@wlan0
 
-# Bring up wlan0 interface and obtain IP via DHCP
+# Bring up the wlan0 interface and obtain an IP address via DHCP
 ifup wlan0
 ```
 
-To automatically connect to WiFi at boot, uncomment the `auto wlan0` line in `/etc/network/interfaces`
+To automatically connect to WiFi at boot, uncomment the `auto wlan0` line in `/etc/network/interfaces` (requires a persistence filesystem to be configured beforehand).
 
 > [!Important]
 > Use the `vmbr1` bridge for VMs when your internet source is WiFi.
 
 > [!Tip]
-> **Faster Boot Time:** If you're using ethernet only, remove the `auto wlan0` line from `/etc/network/interfaces` and configure a static IP for `vmbr0` to speed up boot time.
+> If you're using ethernet only, remove or comment out the `auto wlan0` line from `/etc/network/interfaces` and configure a static IP for `vmbr0` interface to speed up boot time.
 
 ---
 
