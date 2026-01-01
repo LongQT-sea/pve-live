@@ -2,6 +2,9 @@
 # live-build hook script for final configuration after other hook scripts finish
 # This script runs in the chroot environment during live system build
 
+# Prevent pvenetcommit from overwriting /etc/network/interfaces
+rm -f /etc/network/interfaces.new
+
 # Disable unnecessary services
 systemctl disable pve-ha-crm pve-ha-lrm corosync pve-sdn-commit pve-firewall-commit
 
@@ -16,7 +19,6 @@ EOD
 
 # Enable root login with password in sshd
 sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
 # Add custom alias
 cat <<EOF >>/etc/bash.bashrc

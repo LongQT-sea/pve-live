@@ -16,6 +16,7 @@ apt-get install $APT_OPTS \
     bash-completion \
     e2fsprogs \
     btrfs-progs \
+    ntfs-3g \
     sudo \
     nano \
     vim-tiny \

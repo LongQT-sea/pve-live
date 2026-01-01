@@ -10,5 +10,5 @@ lb config noauto \
      --archive-areas "main" \
      --apt-source-archives false \
      --memtest memtest86+ \
-     --bootappend-live "persistence boot=live components hostname=pve-live net.ifnames=0 biosdevname=0" \
+     --bootappend-live "persistence boot=live components hostname=pve-live net.ifnames=0 biosdevname=0 iommu=pt" \
      "${@}"
